@@ -1,0 +1,19 @@
+{
+  "name": "api_node_js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^1.32.0",
+    "bip39": "^3.0.4",
+    "ed25519-hd-key": "^1.2.0",
+    "express": "^4.17.2",
+    "morgan": "^1.10.0"
+  }
+}
