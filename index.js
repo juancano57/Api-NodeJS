@@ -42,6 +42,6 @@ app.get('/keypair_public_key', (req, res) => {
 });
 
 // Starting the Server
-app.listen(app.get('port'), hostname = 'localhost', () =>{
+app.listen(app.get('port'), () =>{
     console.log(`Server on port ${app.get('port')}`);
 })
