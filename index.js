@@ -38,16 +38,20 @@ app.get('/keypair_public_key', (req, res) => {
     const seed = bip39.mnemonicToSeedSync(mnemonic, "")
     const path = `m/44'/501'/0'/0'`;
     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
-    res.send(keypair.publicKey.toString())
+    //res.send(keypair.publicKey.toString())
+    res.json({
+        "public_key": keypair.publicKey.toString(),
+        "secret_key": keypair.secretKey.toString()
+    })
 });
 
-//Generate Keypair (return secretKey)
-app.get('/keypair_secret_key', (req, res) => {
-    const seed = bip39.mnemonicToSeedSync(mnemonic, "")
-    const path = `m/44'/501'/0'/0'`;
-    const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
-    res.send(keypair.secretKey.toString())
-});
+// //Generate Keypair (return secretKey)
+// app.get('/keypair_secret_key', (req, res) => {
+//     const seed = bip39.mnemonicToSeedSync(mnemonic, "")
+//     const path = `m/44'/501'/0'/0'`;
+//     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
+//     res.send(keypair.secretKey.toString())
+// });
 
 // Starting the Server
 app.listen(app.get('port'), () =>{
