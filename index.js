@@ -33,8 +33,8 @@ app.post('/enviar_mnemonic', (req, res) => {
     return mnemonic
 })
 
-//Generate Keypair (return publicKey)
-app.get('/keypair_public_key', (req, res) => {
+//Generate Keypair 
+app.get('/keypair', (req, res) => {
     const seed = bip39.mnemonicToSeedSync(mnemonic, "")
     const path = `m/44'/501'/0'/0'`;
     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
