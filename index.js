@@ -38,7 +38,8 @@ app.get('/keypair_public_key', (req, res) => {
     const seed = bip39.mnemonicToSeedSync(mnemonic, "")
     const path = `m/44'/501'/0'/0'`;
     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
-    res.send(keypair.secretKey.toString(), keypair.publicKey.toString())
+    res.send(keypair.secretKey.toString())
+    res.send(keypair.publicKey.toString())
 });
 
 // Starting the Server
