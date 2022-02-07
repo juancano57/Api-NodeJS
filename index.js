@@ -40,7 +40,7 @@ app.get('/keypair_public_key', (req, res) => {
     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
     res.send(
         {
-            "secretKey": keypair.secretKey,
+            "secretKey": keypair.secretKey.toString(),
             "publicKey": keypair.publicKey.toString()
         }
     )
