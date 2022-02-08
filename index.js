@@ -43,19 +43,28 @@ function createConnection(cluster) {
 
 // Enviar SOL
 
-async function sendTransaction(fromPubkey, toPublicKey, lamps){
+app.get('/send_transaction/:mnemonic/:toPublicKey/:lamps', (req, res) => {
+
+    const { mnemonic, toPublicKey, lamps } = req.params;
 
     const connection = createConnection("devnet")
-
+    
+    const seed = bip39.mnemonicToSeedSync(mnemonic, "")
+    const path = `m/44'/501'/0'/0'`;
+    const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key)
+    
     const transferTransaction = new Transaction()
       .add(SystemProgram.transfer({
-        fromPubkey: new PublicKey(fromPubkey),
-        toPubkey: new PublicKey(toPublicKey),
+        fromPubkey: keypair.publicKey,
+        toPubkey: new web3.PublicKey(toPublicKey),
         lamports: lamps / LAMPORTS_PER_SOL 
     }))
+    
+    var signature = await sendAndConfirmTransaction(connection, transferTransaction, [keypair])
 
-    await sendAndConfirmTransaction(connection, transferTransaction, [fromKeypair]);
-}    
+    res.send(signature)
+})
+
 
 //Enviar SPL TOKEN
 
