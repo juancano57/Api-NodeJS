@@ -26,13 +26,6 @@ app.get('/mnemonic', (req, res) => {
     res.send(mnemonic)
 })
 
-//Recibir Mnemonic
-app.post('/enviar_mnemonic', (req, res) => {
-    mnemonic = req.body['mnemonic']
-    console.log(mnemonic);
-    return mnemonic
-})
-
 //Generate Keypair (return publicKey)
 app.get('/keypair_public_key/:mnemonic', (req, res) => {
     const { mnemonic } = req.params;
