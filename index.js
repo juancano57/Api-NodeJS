@@ -6,7 +6,7 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 
-let mnemonic = "";
+const LAMPORTS_PER_SOL = web3.LAMPORTS_PER_SOL
 
 // Settings 
 app.set('port', process.env.PORT || 3000);
@@ -22,9 +22,9 @@ app.use(express.json());
 
 //Generate Mnemonic
 app.get('/mnemonic', (req, res) => {
-    mnemonic = bip39.generateMnemonic();
-    res.send(mnemonic);
-});
+    mnemonic = bip39.generateMnemonic()
+    res.send(mnemonic)
+})
 
 //Recibir Mnemonic
 app.post('/enviar_mnemonic', (req, res) => {
@@ -34,21 +34,38 @@ app.post('/enviar_mnemonic', (req, res) => {
 })
 
 //Generate Keypair (return publicKey)
-app.get('/keypair_public_key', (req, res) => {
+app.get('/keypair_public_key/:mnemonic', (req, res) => {
+    const { mnemonic } = req.params;
     const seed = bip39.mnemonicToSeedSync(mnemonic, "")
     const path = `m/44'/501'/0'/0'`;
     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
-    res._construct(keypair)
-    //res.format(keypair)
-});
+    res.send(keypair.publicKey.toString())
+})
 
-// //Generate Keypair (return secretKey)
-// app.get('/keypair_secret_key', (req, res) => {
-//     const seed = bip39.mnemonicToSeedSync(mnemonic, "")
-//     const path = `m/44'/501'/0'/0'`;
-//     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
-//     res.send(keypair.secretKey.toString())
-// });
+
+//Crear Conexion
+function createConnection(cluster) {
+    return new web3.Connection(web3.clusterApiUrl(cluster))
+}
+
+// Enviar SOL
+
+async function sendTransaction(fromPubkey, toPublicKey, lamps){
+
+    const connection = createConnection("devnet")
+
+    const transferTransaction = new Transaction()
+      .add(SystemProgram.transfer({
+        fromPubkey: new PublicKey(fromPubkey),
+        toPubkey: new PublicKey(toPublicKey),
+        lamports: lamps / LAMPORTS_PER_SOL 
+    }))
+
+    await sendAndConfirmTransaction(connection, transferTransaction, [fromKeypair]);
+}    
+
+//Enviar SPL TOKEN
+
 
 // Starting the Server
 app.listen(app.get('port'), () =>{
