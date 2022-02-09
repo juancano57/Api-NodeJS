@@ -1,6 +1,7 @@
 const bip39 = require('bip39');
 const web3 = require('@solana/web3.js');
 const ed25519 = require("ed25519-hd-key");
+const { TOKEN_PROGRAM_ID, Token } = require("@solana/spl-token");
 
 const express = require('express');
 const app = express();
@@ -36,31 +37,96 @@ app.get('/keypair_public_key/:mnemonic', (req, res) => {
 })
 
 
-// //Crear Conexion
-// function createConnection(cluster) {
-//     return new web3.Connection(web3.clusterApiUrl(cluster))
-// }
+//Crear Conexion
+function createConnection(cluster) {
+    return new web3.Connection(web3.clusterApiUrl(cluster))
+}
 
-// // Enviar SOL
-// app.get('/send_transaction/:mnemonic/:toPublicKey/:lamps', (req, res) => {
+// Enviar SOL
+app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => {
 
-//     const { mnemonic, toPublicKey, lamps } = req.params;
+    const { mnemonic, toPublicKey, amount } = req.params;
 
-//     const connection = createConnection("devnet")
+    try {
+        const toPubKey = new web3.PublicKey(toPublicKey)
+        const connection = createConnection("devnet")
     
-//     const seed = bip39.mnemonicToSeedSync(mnemonic, "")
-//     const path = `m/44'/501'/0'/0'`;
-//     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key)
+        const seed = bip39.mnemonicToSeedSync(mnemonic, "")
+        const path = `m/44'/501'/0'/0'`;
+        const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key)
     
-//     const transferTransaction = new web3.Transaction()
-//       .add(SystemProgram.transfer({
-//         fromPubkey: keypair.publicKey,
-//         toPubkey: new web3.PublicKey(toPublicKey),
-//         lamports: lamps / LAMPORTS_PER_SOL 
-//     }))
+        const transferTransaction = new web3.Transaction()
+        .add(web3.SystemProgram.transfer({
+            fromPubkey: keypair.publicKey,
+            toPubkey: toPubKey,
+            lamports: amount * LAMPORTS_PER_SOL 
+        }))
     
-//     var signature = await sendAndConfirmTransaction(connection, transferTransaction, [keypair])
-// })
+        var signature = await web3.sendAndConfirmTransaction(
+            connection,
+            transferTransaction,
+            [keypair]).catch((err) => {
+            res.send(err)
+        })
+        res.send(signature)
+    } catch (error) {
+       res.send(error)
+    }
+})
+
+//Enviar SPL
+app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req, res) => {
+
+    const { mnemonic, toPublicKey, amount, mint } = req.params;
+    const connection = createConnection("devnet")
+    const myMint = new web3.PublicKey(mint)
+
+    try {
+
+        //Creacion de la Cuenta (Keypair)
+        const seed = bip39.mnemonicToSeedSync(mnemonic, "")
+        const path = `m/44'/501'/0'/0'`;
+        const fromKeypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key)
+
+        var myToken = new Token(
+            connection,
+            myMint,
+            TOKEN_PROGRAM_ID,
+            fromKeypair
+        )
+
+        var fromTokenAccount = await myToken.getOrCreateAssociatedAccountInfo(
+            fromKeypair.publicKey
+        )
+        var toTokenAccount = await myToken.getOrCreateAssociatedAccountInfo(
+            new web3.PublicKey(toPublicKey)
+        )
+
+        const transaction = new web3.Transaction()
+            .add(
+                Token.createTransferInstruction(
+                    TOKEN_PROGRAM_ID,
+                    fromTokenAccount.address,
+                    toTokenAccount.address,
+                    fromKeypair.publicKey,
+                    [],
+                    amount * LAMPORTS_PER_SOL
+                )
+        )
+
+        var signature = await web3.sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [fromKeypair]).catch((err) => {
+            res.send(err)
+        })
+        res.send(signature)
+    } catch (error) {
+        res.send(error)
+    }
+
+})
+
 
 // Starting the Server
 app.listen(app.get('port'), () =>{
