@@ -27,6 +27,7 @@ app.get('/mnemonic', (req, res) => {
     res.send(mnemonic)
 })
 
+
 //Generate Keypair (return publicKey)
 app.get('/keypair_public_key/:mnemonic', (req, res) => {
     const { mnemonic } = req.params;
@@ -55,7 +56,6 @@ function createConnection(cluster) {
 app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => {
 
     const { mnemonic, toPublicKey, amount } = req.params;
-
     try {
         const toPubKey = new web3.PublicKey(toPublicKey)
         const connection = createConnection("devnet")
@@ -75,11 +75,11 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
             connection,
             transferTransaction,
             [keypair]).catch((err) => {
-            res.send(err)
+            res.send(err.message)
         })
         res.send(signature)
     } catch (error) {
-       res.send(error)
+       res.send(error.message)
     }
 })
 
@@ -89,7 +89,6 @@ app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req
     const { mnemonic, toPublicKey, amount, mint } = req.params;
     const connection = createConnection("devnet")
     const myMint = new web3.PublicKey(mint)
-
     try {
 
         //Creacion de la Cuenta (Keypair)
@@ -127,11 +126,11 @@ app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req
             connection,
             transaction,
             [fromKeypair]).catch((err) => {
-            res.send(err)
+            res.send(err.message)
         })
         res.send(signature)
     } catch (error) {
-        res.send(error)
+        res.send(error.message)
     }
 
 })
