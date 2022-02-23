@@ -75,7 +75,7 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
             connection,
             transferTransaction,
             [keypair]).catch((err) => {
-            res.send(err.message)
+            res.send(err)
         })
         res.send(signature)
     } catch (error) {
@@ -126,7 +126,7 @@ app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req
             connection,
             transaction,
             [fromKeypair]).catch((err) => {
-            res.send(err.message)
+            res.send(err)
         })
         res.send(signature)
     } catch (error) {
@@ -178,7 +178,7 @@ app.get('/send_transaction_spl_stable/:mnemonic/:toPublicKey/:amount/:mint', asy
             connection,
             transaction,
             [fromKeypair]).catch((err) => {
-            res.send(err.message)
+            res.send(err)
         })
         res.send(signature)
     } catch (error) {
