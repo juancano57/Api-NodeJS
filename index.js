@@ -118,7 +118,7 @@ app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req
                     toTokenAccount.address,
                     fromKeypair.publicKey,
                     [],
-                    amount / LAMPORTS_PER_SOL
+                    amount 
                 )
         )
 
