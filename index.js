@@ -58,7 +58,7 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
     const { mnemonic, toPublicKey, amount } = req.params;
     try {
         const toPubKey = new web3.PublicKey(toPublicKey)
-        const connection = createConnection("devnet")
+        const connection = createConnection("mainnet-beta")
     
         const seed = bip39.mnemonicToSeedSync(mnemonic, "")
         const path = `m/44'/501'/0'/0'`;
@@ -87,7 +87,7 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
 app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req, res) => {
 
     const { mnemonic, toPublicKey, amount, mint } = req.params;
-    const connection = createConnection("devnet")
+    const connection = createConnection("mainnet-beta")
     const myMint = new web3.PublicKey(mint)
     try {
 
