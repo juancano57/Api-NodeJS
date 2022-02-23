@@ -118,6 +118,58 @@ app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req
                     toTokenAccount.address,
                     fromKeypair.publicKey,
                     [],
+                    amount * LAMPORTS_PER_SOL
+                )
+        )
+
+        var signature = await web3.sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [fromKeypair]).catch((err) => {
+            res.send(err.message)
+        })
+        res.send(signature)
+    } catch (error) {
+        res.send(error.message)
+    }
+
+})
+
+//Enviar SPL Estable
+app.get('/send_transaction_spl_stable/:mnemonic/:toPublicKey/:amount/:mint', async (req, res) => {
+
+    const { mnemonic, toPublicKey, amount, mint } = req.params;
+    const connection = createConnection("mainnet-beta")
+    const myMint = new web3.PublicKey(mint)
+    try {
+
+        //Creacion de la Cuenta (Keypair)
+        const seed = bip39.mnemonicToSeedSync(mnemonic, "")
+        const path = `m/44'/501'/0'/0'`;
+        const fromKeypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key)
+
+        var myToken = new Token(
+            connection,
+            myMint,
+            TOKEN_PROGRAM_ID,
+            fromKeypair
+        )
+
+        var fromTokenAccount = await myToken.getOrCreateAssociatedAccountInfo(
+            fromKeypair.publicKey
+        )
+        var toTokenAccount = await myToken.getOrCreateAssociatedAccountInfo(
+            new web3.PublicKey(toPublicKey)
+        )
+
+        const transaction = new web3.Transaction()
+            .add(
+                Token.createTransferInstruction(
+                    TOKEN_PROGRAM_ID,
+                    fromTokenAccount.address,
+                    toTokenAccount.address,
+                    fromKeypair.publicKey,
+                    [],
                     amount * 1000000
                 )
         )
