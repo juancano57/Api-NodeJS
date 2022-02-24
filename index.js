@@ -77,7 +77,7 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
             [keypair]).catch((err) => {
             res.send(err)
         })
-        res.send("success")
+        res.send(signature)
     } catch (error) {
        res.send(error.message)
     }
