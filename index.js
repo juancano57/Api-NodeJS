@@ -128,7 +128,7 @@ app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req
             [fromKeypair]).catch((err) => {
             res.send("error1: "+err)
         })
-        res.send(signature)
+        res.send("success")
     } catch (error) {
         res.send("error2: "+error.message)
     }
