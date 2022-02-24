@@ -135,7 +135,6 @@ app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req
 
 })
 
-//martiolo
 //Enviar SPL Estable
 app.get('/send_transaction_spl_stable/:mnemonic/:toPublicKey/:amount/:mint', async (req, res) => {
 
@@ -183,7 +182,7 @@ app.get('/send_transaction_spl_stable/:mnemonic/:toPublicKey/:amount/:mint', asy
         })
         res.send("success")
     } catch (error) {
-        res.send(error.message)
+        res.send("error:"+rror.message)
     }
 
 })
