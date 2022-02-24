@@ -77,7 +77,7 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
             [keypair]).catch((err) => {
             res.send("error1: "+err)
         })
-        res.send(signature)
+        res.send("success")
     } catch (error) {
        res.send("error2: "+error.message)
     }
@@ -181,7 +181,7 @@ app.get('/send_transaction_spl_stable/:mnemonic/:toPublicKey/:amount/:mint', asy
             [fromKeypair]).catch((err) => {
             res.send("error1: "+err)
         })
-        res.send(signature)
+        res.send("success")
     } catch (error) {
         res.send("error2: "+error.message)
     }
