@@ -63,7 +63,7 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
         const seed = bip39.mnemonicToSeedSync(mnemonic, "")
         const path = `m/44'/501'/0'/0'`;
         const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key)
-        res.write(keypair)
+        console.log(keypair);
     
         const transferTransaction = new web3.Transaction()
         .add(web3.SystemProgram.transfer({
@@ -72,13 +72,12 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
             lamports: amount * LAMPORTS_PER_SOL 
         }))
 
-        res.write(transferTransaction)
+        console.log(transferTransaction);
     
         var signature = await web3.sendAndConfirmTransaction(connection, transferTransaction, [keypair])
-
-        res.write(signature)
+        res.send(signature)
     } catch (error) {
-       res.write(error.message)
+       res.send(error.message)
     }
 })
 
