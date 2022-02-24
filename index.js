@@ -182,7 +182,7 @@ app.get('/send_transaction_spl_stable/:mnemonic/:toPublicKey/:amount/:mint', asy
         })
         res.send("success")
     } catch (error) {
-        res.send("error:"+rror.message)
+        res.send(error.message)
     }
 
 })
