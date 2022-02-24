@@ -56,25 +56,26 @@ function createConnection(cluster) {
 app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => {
 
     const { mnemonic, toPublicKey, amount } = req.params;
-    const toPubKey = new web3.PublicKey(toPublicKey)
-    const connection = createConnection("mainnet-beta")
+    try {
+        const toPubKey = new web3.PublicKey(toPublicKey)
+        const connection = createConnection("mainnet-beta")
     
-    const seed = bip39.mnemonicToSeedSync(mnemonic, "")
-    const path = `m/44'/501'/0'/0'`;
-    const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key)
+        const seed = bip39.mnemonicToSeedSync(mnemonic, "")
+        const path = `m/44'/501'/0'/0'`;
+        const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key)
     
-    const transferTransaction = new web3.Transaction()
-    .add(web3.SystemProgram.transfer({
-        fromPubkey: keypair.publicKey,
-        toPubkey: toPubKey,
-        lamports: amount * LAMPORTS_PER_SOL 
-    }))
+        const transferTransaction = new web3.Transaction()
+        .add(web3.SystemProgram.transfer({
+            fromPubkey: keypair.publicKey,
+            toPubkey: toPubKey,
+            lamports: amount * LAMPORTS_PER_SOL 
+        }))
     
-    var signature = await web3.sendAndConfirmTransaction(connection, transferTransaction, [keypair]).catch((err) => {
-        res.send(err)
-    })
-    
-    res.send(signature)
+        var signature = await web3.sendAndConfirmTransaction(connection, transferTransaction, [keypair])
+        res.send(signature)
+    } catch (error) {
+       res.send(error.message)
+    }
 })
 
 //Enviar SPL
