@@ -71,7 +71,7 @@ app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => 
             lamports: amount * LAMPORTS_PER_SOL 
         }))
     
-        var signature = await web3.sendAndConfirmTransaction(
+        var signature = web3.sendAndConfirmTransaction(
             connection,
             transferTransaction,
             [keypair]).catch((err) => {
@@ -122,7 +122,7 @@ app.get('/send_transaction_spl/:mnemonic/:toPublicKey/:amount/:mint', async (req
                 )
         )
 
-        var signature = await web3.sendAndConfirmTransaction(
+        var signature = web3.sendAndConfirmTransaction(
             connection,
             transaction,
             [fromKeypair]).catch((err) => {
@@ -175,7 +175,7 @@ app.get('/send_transaction_spl_stable/:mnemonic/:toPublicKey/:amount/:mint', asy
                 )
         )
 
-        var signature = await web3.sendAndConfirmTransaction(
+        var signature = web3.sendAndConfirmTransaction(
             connection,
             transaction,
             [fromKeypair]).catch((err) => {
