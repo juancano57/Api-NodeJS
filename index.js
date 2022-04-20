@@ -23,10 +23,15 @@ app.use(express.json());
 
 //Generate Mnemonic
 app.get('/mnemonic', (req, res) => {
-    mnemonic = bip39.generateMnemonic()
+    const mnemonic = bip39.generateMnemonic()
     res.send(mnemonic)
 })
 
+//Generate Keypair sin Mnemonic
+app.get('/keypair', (req, res) => {
+    const keypair = web3.Keypair.generate();
+    res(keypair)
+})
 
 //Generate Keypair (return publicKey)
 app.get('/keypair_public_key/:mnemonic', (req, res) => {
@@ -45,7 +50,6 @@ app.get('/keypair_secret_key/:mnemonic', (req, res) => {
     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
     res.send(keypair.secretKey.toString())
 })
-
 
 //Crear Conexion
 function createConnection(cluster) {
