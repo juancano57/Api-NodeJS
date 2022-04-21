@@ -1,5 +1,6 @@
 const bip39 = require('bip39');
 const web3 = require('@solana/web3.js');
+const bs58 = require('bs58');
 const ed25519 = require("ed25519-hd-key");
 const { TOKEN_PROGRAM_ID, Token } = require("@solana/spl-token");
 
@@ -27,11 +28,156 @@ app.get('/mnemonic', (req, res) => {
     res.send(mnemonic)
 })
 
-//Generate Keypair sin Mnemonic
+//-----------------------------------------------------------//
+//Generate Keypair sin Mnemonic (return publicKey)
 app.get('/keypair', (req, res) => {
     const keypair = web3.Keypair.generate();
-    res(keypair)
+    const secret_key = bs58.encode(keypair.secretKey)
+    res.json({
+        'public_key': keypair.publicKey.toString(),
+        'secret_key': secret_key
+    })
 })
+
+//enviar SOL con la secret key 
+app.get('/send_transaction_sk/:secretKey/:toPublicKey/:amount', async (req, res) => {
+    const { secretKey, toPublicKey, amount } = req.params;
+
+    try {
+        const toPubKey = new web3.PublicKey(toPublicKey)
+        const connection = createConnection("mainnet-beta")
+
+        //create Keypair
+        const keypair = web3.Keypair.fromSecretKey(
+            bs58.decode(secretKey)
+        );   
+          
+        const transferTransaction = new web3.Transaction()
+        .add(web3.SystemProgram.transfer({
+            fromPubkey: keypair.publicKey,
+            toPubkey: toPubKey,
+            lamports: amount * LAMPORTS_PER_SOL 
+        }))
+    
+        var signature = await web3.sendAndConfirmTransaction(
+            connection, 
+            transferTransaction, 
+            [keypair]).catch((err) => {
+            res.send(err)
+        })
+        res.send(signature)
+    } catch (error) {
+       res.send(error.message)
+    }
+
+})
+
+//Enviar SPL con la secret key 
+app.get('/send_transaction_spl_sk/:secretKey/:toPublicKey/:amount/:mint', async (req, res) => {
+
+    const { secretKey, toPublicKey, amount, mint } = req.params;
+    const connection = createConnection("mainnet-beta")
+    const myMint = new web3.PublicKey(mint)
+    
+    try {
+
+        //create Keypair
+        const fromKeypair = web3.Keypair.fromSecretKey(
+            bs58.decode(secretKey)
+        );
+
+        var myToken = new Token(
+            connection,
+            myMint,
+            TOKEN_PROGRAM_ID,
+            fromKeypair
+        )
+
+        var fromTokenAccount = await myToken.getOrCreateAssociatedAccountInfo(
+            fromKeypair.publicKey
+        )
+        var toTokenAccount = await myToken.getOrCreateAssociatedAccountInfo(
+            new web3.PublicKey(toPublicKey)
+        )
+
+        const transaction = new web3.Transaction()
+            .add(
+                Token.createTransferInstruction(
+                    TOKEN_PROGRAM_ID,
+                    fromTokenAccount.address,
+                    toTokenAccount.address,
+                    fromKeypair.publicKey,
+                    [],
+                    amount * LAMPORTS_PER_SOL
+                )
+        )
+
+        var signature = await web3.sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [fromKeypair]).catch((err) => {
+            res.send(err)
+        })
+        res.send(signature)
+    } catch (error) {
+        res.send(error.message)
+    }
+
+})
+
+//Enviar SPL Estable
+app.get('/send_transaction_spl_stable_sk/:secretKey/:toPublicKey/:amount/:mint', async (req, res) => {
+
+    const { secretKey, toPublicKey, amount, mint } = req.params;
+    const connection = createConnection("mainnet-beta")
+    const myMint = new web3.PublicKey(mint)
+    try {
+
+        //Create keypair
+        const fromKeypair = web3.Keypair.fromSecretKey(
+            bs58.decode(secretKey)
+        );
+
+        var myToken = new Token(
+            connection,
+            myMint,
+            TOKEN_PROGRAM_ID,
+            fromKeypair
+        )
+
+        var fromTokenAccount = await myToken.getOrCreateAssociatedAccountInfo(
+            fromKeypair.publicKey
+        )
+        var toTokenAccount = await myToken.getOrCreateAssociatedAccountInfo(
+            new web3.PublicKey(toPublicKey)
+        )
+
+        const transaction = new web3.Transaction()
+            .add(
+                Token.createTransferInstruction(
+                    TOKEN_PROGRAM_ID,
+                    fromTokenAccount.address,
+                    toTokenAccount.address,
+                    fromKeypair.publicKey,
+                    [],
+                    amount * 1000000
+                )
+        )
+
+        var signature = await web3.sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [fromKeypair]).catch((err) => {
+            res.send(err)
+        })
+        res.send(signature)
+    } catch (error) {
+        res.send(error.message)
+    }
+
+})
+
+//------------------------------------------------------------//
 
 //Generate Keypair (return publicKey)
 app.get('/keypair_public_key/:mnemonic', (req, res) => {
