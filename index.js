@@ -28,7 +28,8 @@ app.get('/mnemonic', (req, res) => {
     res.send(mnemonic)
 })
 
-//-----------------------------------------------------------//
+//---------------------RUTAS SIN MNEMONICO------------------------//
+
 //Generate Keypair sin Mnemonic (return publicKey)
 app.get('/keypair', (req, res) => {
     const keypair = web3.Keypair.generate();
@@ -177,24 +178,21 @@ app.get('/send_transaction_spl_stable_sk/:secretKey/:toPublicKey/:amount/:mint',
 
 })
 
-//------------------------------------------------------------//
+//-------------------FIN RUTAS SIN MNEMONICO----------------------------//
 
-//Generate Keypair (return publicKey)
-app.get('/keypair_public_key/:mnemonic', (req, res) => {
+
+//-------------------RUTAS CON MNEMONICO--------------------------------//
+
+//Generate Keypair (return publicKey and secretKey)
+app.get('/keypair/:mnemonic', (req, res) => {
     const { mnemonic } = req.params;
     const seed = bip39.mnemonicToSeedSync(mnemonic, "")
     const path = `m/44'/501'/0'/0'`;
     const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
-    res.send(keypair.publicKey.toString())
-})
-
-//Generate Keypair (return secretKey)
-app.get('/keypair_secret_key/:mnemonic', (req, res) => {
-    const { mnemonic } = req.params;
-    const seed = bip39.mnemonicToSeedSync(mnemonic, "")
-    const path = `m/44'/501'/0'/0'`;
-    const keypair = web3.Keypair.fromSeed(ed25519.derivePath(path, seed.toString("hex")).key);
-    res.send(keypair.secretKey.toString())
+    res.json({
+        'public_key': keypair.publicKey.toString(),
+        'secret_key': keypair.secretKey.toString()
+    })
 })
 
 //Crear Conexion
