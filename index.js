@@ -11,7 +11,7 @@ const morgan = require('morgan');
 const LAMPORTS_PER_SOL = web3.LAMPORTS_PER_SOL
 
 // Settings 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 4000);
 app.set('json spaces', 2);
 
 // Middlewares
