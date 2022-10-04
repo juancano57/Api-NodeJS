@@ -4,6 +4,7 @@ const bs58 = require('bs58');
 const ed25519 = require("ed25519-hd-key");
 const { TOKEN_PROGRAM_ID, Token } = require("@solana/spl-token");
 
+
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
@@ -18,6 +19,10 @@ app.set('json spaces', 2);
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+
+
+//variables
+const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new web3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
 
 
 // ----Routes----
@@ -183,6 +188,11 @@ app.get('/send_transaction_spl_stable_sk/:secretKey/:toPublicKey/:amount/:mint',
 
 //-------------------RUTAS CON MNEMONICO--------------------------------//
 
+//Crear Conexion
+function createConnection(cluster) {
+    return new web3.Connection(web3.clusterApiUrl(cluster))
+}
+
 //Generate Keypair (return publicKey and secretKey)
 app.get('/keypair/:mnemonic', (req, res) => {
     const { mnemonic } = req.params;
@@ -196,10 +206,66 @@ app.get('/keypair/:mnemonic', (req, res) => {
     })
 })
 
-//Crear Conexion
-function createConnection(cluster) {
-    return new web3.Connection(web3.clusterApiUrl(cluster))
+//Get Balance Sol
+app.get('/getBalanceSol/:publicKey', async (req, res) => {
+    const { publicKey } = req.params;
+    const connection = createConnection("mainnet-beta")
+
+    const lamports = await connection.getBalance(new web3.PublicKey(publicKey)).catch((err) => {
+        console.log(err);
+    })
+
+    const sol = lamports / LAMPORTS_PER_SOL
+    res.json({
+        'balance': sol
+    })
+})
+
+//Get Balance SPL
+app.get('/getBalanceSpl/:publicKey', async (req, res) => {
+    const { publicKey } = req.params;
+    const connection = createConnection("mainnet-beta")
+
+    const lamports = await connection.getBalance(new web3.PublicKey(publicKey)).catch((err) => {
+        console.log(err);
+    })
+
+    const sol = lamports / LAMPORTS_PER_SOL
+    res.json({
+        'balance': sol
+    })
+})
+
+//buscar cuentas asociadas a tokens
+async function findAssociatedTokenAddress(walletAddress,tokenMintAddress) {
+    return (
+      await web3.PublicKey.findProgramAddress(
+        [
+          walletAddress.toBuffer(),
+          TOKEN_PROGRAM_ID.toBuffer(),
+          tokenMintAddress.toBuffer(),
+        ],
+        SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+      )
+    )[0];
 }
+
+//get Balance SPL
+app.get('/getBalanceSPL/:publicKey/:splToken', async (req, res) => {
+    const { publicKey, splToken } = req.params;
+    const connection = createConnection("mainnet-beta")
+    const account = await findAssociatedTokenAddress(new web3.PublicKey(publicKey), new web3.PublicKey(splToken))
+    try {
+        const balance = await connection.getTokenAccountBalance(new web3.PublicKey(account.toString()))
+        res.json({
+            'balance': balance.value.uiAmount
+        })
+      } catch (e) {
+        res.json({
+            'error': e
+        })
+      }
+})
 
 // Enviar SOL
 app.get('/send_transaction/:mnemonic/:toPublicKey/:amount', async (req, res) => {
