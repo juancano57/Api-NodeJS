@@ -190,7 +190,7 @@ app.get('/send_transaction_spl_stable_sk/:secretKey/:toPublicKey/:amount/:mint',
 
 //Crear Conexion
 function createConnection(cluster) {
-    return new web3.Connection(web3.clusterApiUrl(cluster))
+    return new web3.Connection(web3.clusterApiUrl(cluster),"confirmed");
 }
 
 //Generate Keypair (return publicKey and secretKey)
