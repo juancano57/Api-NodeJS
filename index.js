@@ -4,12 +4,15 @@ const bs58 = require('bs58');
 const ed25519 = require("ed25519-hd-key");
 const { TOKEN_PROGRAM_ID, Token } = require("@solana/spl-token");
 
+const { Metaplex } = require("@metaplex-foundation/js");
+const axios = require('axios');
 
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
 
 const LAMPORTS_PER_SOL = web3.LAMPORTS_PER_SOL
+const endpoint = 'https://divine-dark-diagram.solana-mainnet.discover.quiknode.pro/7426100fea9dc7fa342dbc8123aaaad6f55b1960/'
 
 // Settings 
 app.set('port', process.env.PORT || 4000);
@@ -20,10 +23,36 @@ app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
-
 //variables
 const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new web3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
 
+//Crear Conexion
+function createConnection(cluster) {
+    return new web3.Connection(web3.clusterApiUrl(cluster),"confirmed");
+}
+
+app.get('/getNfts/:pubKey', async (req, res) => {
+    const { pubKey } = req.params;
+    
+    const nfts = []
+
+    const connection = new web3.Connection(endpoint);
+    const wallet = new web3.PublicKey(pubKey)
+
+    const metaplex = new Metaplex(connection);
+    const myNfts = await metaplex.nfts().findAllByOwner({
+        owner: wallet
+    });
+
+    for (let i = 0; i < myNfts.length; i++) {
+        const uri = myNfts[i].uri;
+        await axios.get(uri).then(response => {
+            nfts.push(response.data)
+        })
+    }
+
+    res.json(nfts)
+})
 
 // ----Routes----
 
@@ -187,11 +216,6 @@ app.get('/send_transaction_spl_stable_sk/:secretKey/:toPublicKey/:amount/:mint',
 
 
 //-------------------RUTAS CON MNEMONICO--------------------------------//
-
-//Crear Conexion
-function createConnection(cluster) {
-    return new web3.Connection(web3.clusterApiUrl(cluster),"confirmed");
-}
 
 //Generate Keypair (return publicKey and secretKey)
 app.get('/keypair/:mnemonic', (req, res) => {
